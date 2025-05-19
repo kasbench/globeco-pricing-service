@@ -24,4 +24,18 @@ Step 7 executed: Implemented unit tests for the Price entity, repository, servic
 
 Step 8 executed: Implemented Caffeine caching for price using Spring's caching abstraction with a 5 minute TTL, as required in @requirements.md.
 
-Step 9 executed: Implemented unit tests for price caching to verify cache hits and TTL behavior. 
+Step 9 executed: Implemented unit tests for price caching to verify cache hits and TTL behavior.
+
+[2024-06-10 10:00] Checked for existing DTOs and mapping utilities in the codebase as part of Step 10 (Implement DTOs) and Step 11 (Implement APIs) from the execution plan. No existing dto package or mapping utilities found. Proceeding to create a PriceDto class and mapping logic consistent with project conventions. 
+
+[2024-06-10 10:01] Created PriceDto class in new dto package, following project conventions and omitting the version field. Includes all relevant fields, constructors, getters, setters, and toString. 
+
+[2024-06-10 10:02] Added mapping methods between Price and PriceDto in PriceService interface, including type conversions and field mapping. Fixed linter errors by using correct entity field names and types, and handling conversion between java.util.Date and java.time.LocalDate.
+
+[2024-06-10 10:03] Started Step 11: Implementing the APIs for price as specified in requirements.md, including the specialized logic for price calculation and endpoint structure.
+
+[2024-06-10 10:04] Created PriceController with /api/v1/prices and /api/v1/price/{ticker} endpoints, implementing the specialized price sampling logic as required. Fixed linter error by setting open, close, high, and low fields in the DTO to the sampled price.
+
+[2024-06-10 10:05] Started Step 12: Implementing tests for the PriceController API endpoints as specified in the execution plan.
+
+[2024-06-10 10:06] Created PriceControllerTest with tests for GET /api/v1/prices, GET /api/v1/price/{ticker}, and 404 error handling, using MockMvc and Mockito to mock the service layer and verify response structure.
