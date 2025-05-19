@@ -21,3 +21,7 @@ Updated application.properties: Changed all flyway.* properties to spring.flyway
 Step 6 executed: Implemented the entity (Price), repository (PriceRepository), service interface (PriceService), and service implementation (PriceServiceImpl) for price according to the requirements in @requirements.md. 
 
 Step 7 executed: Implemented unit tests for the Price entity, repository, service interface, and service implementation for price, using test containers as required in step 7 of @execution-plan.md. 
+
+Step 8 executed: Implemented Caffeine caching for price using Spring's caching abstraction with a 5 minute TTL, as required in @requirements.md.
+
+Step 9 executed: Implemented unit tests for price caching to verify cache hits and TTL behavior. 
