@@ -49,3 +49,15 @@ Step 9 executed: Implemented unit tests for price caching to verify cache hits a
 [2024-06-10 10:10] Completed service documentation in README.md, including overview, technology stack, database info, API endpoints, caching, migrations, testing, health checks, and deployment notes.
 
 [2024-06-10 10:11] Started Step 15: Creating a Dockerfile for the application as required by the execution plan.
+
+[2024-06-10 10:13] Started Step 16: Creating Kubernetes deployment files for the application, including liveness, readiness, and startup probes, resource limits, and scaling configuration as specified in the execution plan.
+
+[2024-06-10 10:14] Created Kubernetes deployment, service, and HPA manifests with liveness, readiness, and startup probes, resource limits, scaling, and documented deployment in README.md.
+
+[2024-06-10 10:15] Started Step 17: Exposing the OpenAPI schema as an endpoint using Springdoc OpenAPI as required by the execution plan.
+
+[2024-06-10 10:16] Completed Step 17: OpenAPI schema and Swagger UI are now exposed via Springdoc, with endpoints documented in README.md.
+
+[2024-06-10 10:17] Fixed bug in PriceService.toDto: now converts java.sql.Date to LocalDate using toLocalDate(), preventing UnsupportedOperationException when calling /api/v1/prices.
+
+[2024-06-10 10:18] Fixed test failures in PriceControllerTest by using java.sql.Date for priceDate in all Price entity constructions, matching the type expected by the toDto method and preventing ClassCastException.

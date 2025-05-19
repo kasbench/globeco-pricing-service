@@ -114,3 +114,29 @@ docker run -p 8083:8083 globeco-pricing-service
 ```
 
 The container exposes port 8083 and includes a healthcheck for `/actuator/health/liveness`.
+
+## Kubernetes
+
+To deploy the service to Kubernetes:
+
+1. Ensure the `globeco` namespace exists (or create it):
+   ```sh
+   kubectl create namespace globeco
+   ```
+2. Apply the deployment, service, and autoscaler manifests:
+   ```sh
+   kubectl apply -f k8s/globeco-pricing-service-deployment.yaml
+   kubectl apply -f k8s/globeco-pricing-service-hpa.yaml
+   ```
+
+- The deployment starts with 1 replica and can scale up to 100 based on CPU usage.
+- Resource limits: 100 millicores CPU, 200 MiB memory per pod.
+- Liveness, readiness, and startup probes are configured with a 240s timeout.
+- The service is available on port 8083 within the cluster.
+
+## OpenAPI & Swagger UI
+
+- **OpenAPI schema:** [http://localhost:8083/v3/api-docs](http://localhost:8083/v3/api-docs)
+- **Swagger UI:** [http://localhost:8083/swagger-ui.html](http://localhost:8083/swagger-ui.html)
+
+These endpoints provide interactive API documentation and allow you to test the service endpoints directly from your browser.

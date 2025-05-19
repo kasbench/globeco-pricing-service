@@ -13,7 +13,7 @@ public interface PriceService {
     // Mapping from entity to DTO
     default PriceDto toDto(Price price) {
         if (price == null) return null;
-        LocalDate localDate = price.getPriceDate() == null ? null : price.getPriceDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate localDate = price.getPriceDate() == null ? null : ((java.sql.Date) price.getPriceDate()).toLocalDate();
         return new PriceDto(
             price.getId() == null ? null : price.getId().longValue(),
             price.getTicker(),

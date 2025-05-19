@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: globeco-pricing-service
+  namespace: globeco
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: globeco-pricing-service
+  template:
+    metadata:
+      labels:
+        app: globeco-pricing-service
+    spec:
+      containers:
+        - name: globeco-pricing-service
+          image: globeco-pricing-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8083
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 100m
+              memory: 200Mi
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8083
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 240
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8083
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 240
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /actuator/health/startup
+              port: 8083
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 240
+            failureThreshold: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: globeco-pricing-service
+  namespace: globeco
+spec:
+  selector:
+    app: globeco-pricing-service
+  ports:
+    - protocol: TCP
+      port: 8083
+      targetPort: 8083
+  type: ClusterIP 

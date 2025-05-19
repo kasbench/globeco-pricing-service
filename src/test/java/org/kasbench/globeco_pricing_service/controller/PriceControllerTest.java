@@ -14,8 +14,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
@@ -34,7 +34,7 @@ class PriceControllerTest {
     @Test
     @DisplayName("GET /api/v1/prices returns list of prices with sampled fields")
     void getAllPrices_returnsSampledPrices() throws Exception {
-        Price price = new Price(1, new Date(), "AAPL", new BigDecimal("100.00"), 2.0, 1);
+        Price price = new Price(1, new Date(System.currentTimeMillis()), "AAPL", new BigDecimal("100.00"), 2.0, 1);
         Mockito.when(priceService.getAllPrices()).thenReturn(List.of(price));
         Mockito.when(priceService.toDto(Mockito.any())).thenCallRealMethod();
 
@@ -51,7 +51,7 @@ class PriceControllerTest {
     @Test
     @DisplayName("GET /api/v1/price/{ticker} returns sampled price for ticker")
     void getPriceByTicker_returnsSampledPrice() throws Exception {
-        Price price = new Price(1, new Date(), "AAPL", new BigDecimal("100.00"), 2.0, 1);
+        Price price = new Price(1, new Date(System.currentTimeMillis()), "AAPL", new BigDecimal("100.00"), 2.0, 1);
         Mockito.when(priceService.getPriceByTicker("AAPL")).thenReturn(List.of(price));
         Mockito.when(priceService.toDto(Mockito.any())).thenCallRealMethod();
 
