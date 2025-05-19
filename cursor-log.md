@@ -9,3 +9,11 @@ Step 4 executed: Created the initial Flyway migration for the schema in src/main
 Step 5 executed: Created a Java Flyway migration (V2__load_pricing_data.java) in src/main/java/org/kasbench/globeco_pricing_service/db/migration that (1) randomly selects a date from dates.csv, (2) loads all rows from prices.csv.gz for that date, and (3) inserts them into the price table, letting PostgreSQL generate id and version, as described in the requirements. 
 
 Fixed Flyway migration error: Removed 'ALTER TABLE public.price OWNER TO postgres;' from src/main/resources/db/migration/V1__init_schema.sql to resolve the 'role "postgres" does not exist' error during migration in test environments. 
+
+Fixed Flyway Java migration detection: Added 'flyway.locations=classpath:db/migration,classpath:org/kasbench/globeco_pricing_service/db/migration' to src/main/resources/application.properties to ensure Flyway scans both SQL and Java migration locations and runs V2__load_pricing_data.java. 
+
+Fixed Flyway Java migration execution: Renamed the migration class to 'V2__LoadPricingData' (PascalCase) and deleted the old 'V2__load_pricing_data.java' file to match Flyway's naming convention for Java migrations, ensuring it will be detected and run.
+
+Added Flyway Gradle plugin: Updated build.gradle to apply the Flyway Gradle plugin and configured it to use the same datasource and migration locations as the application, enabling flywayClean and flywayMigrate tasks for migration management. 
+
+Updated application.properties: Changed all flyway.* properties to spring.flyway.* so that Spring Boot will use them for automatic migration on startup. Removed the old flyway.* properties. 

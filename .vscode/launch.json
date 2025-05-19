@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "GlobecoPricingServiceApplication",
+            "request": "launch",
+            "mainClass": "org.kasbench.globeco_pricing_service.GlobecoPricingServiceApplication",
+            "projectName": "globeco-pricing-service"
+        },
+        {
+            "type": "java",
+            "name": "TestGlobecoPricingServiceApplication",
+            "request": "launch",
+            "mainClass": "org.kasbench.globeco_pricing_service.TestGlobecoPricingServiceApplication",
+            "projectName": "globeco-pricing-service"
+        }
+    ]
+}

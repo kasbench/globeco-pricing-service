@@ -3,6 +3,8 @@ plugins {
 	id 'org.springframework.boot' version '3.4.5'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'org.asciidoctor.jvm.convert' version '3.3.2'
+	id 'application'
+	id 'org.flywaydb.flyway' version '9.22.3'
 }
 
 group = 'org.kasbench'
@@ -49,4 +51,13 @@ tasks.named('test') {
 tasks.named('asciidoctor') {
 	inputs.dir snippetsDir
 	dependsOn test
+}
+
+flyway {
+    url = 'jdbc:postgresql://globeco-pricing-service-postgresql:5435/postgres'
+    user = 'postgres'
+    password = ''
+    schemas = ['public']
+    locations = ['classpath:db/migration', 'classpath:org/kasbench/globeco_pricing_service/db/migration']
+    cleanDisabled = false
 }

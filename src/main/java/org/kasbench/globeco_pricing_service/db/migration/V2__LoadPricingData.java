@@ -11,14 +11,17 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
-public class V2__load_pricing_data extends BaseJavaMigration {
+public class V2__LoadPricingData extends BaseJavaMigration {
     @Override
     public void migrate(Context context) throws Exception {
         Connection connection = context.getConnection();
         // Step 1: Pick a random date from dates.csv
         List<String> dates = new ArrayList<>();
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("static/dates.csv");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("static/dates.csv")) {
+            if (is == null) {
+                throw new FileNotFoundException("Could not find static/dates.csv on the classpath");
+            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
             String line = reader.readLine(); // header
             while ((line = reader.readLine()) != null) {
                 dates.add(line.trim());
@@ -31,6 +34,7 @@ public class V2__load_pricing_data extends BaseJavaMigration {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("static/prices.csv.gz");
              GZIPInputStream gzip = new GZIPInputStream(is);
              BufferedReader reader = new BufferedReader(new InputStreamReader(gzip, StandardCharsets.UTF_8))) {
+            @SuppressWarnings("unused")
             String header = reader.readLine(); // header
             String line;
             String sql = "INSERT INTO price (price_date, ticker, price, price_std) VALUES (?, ?, ?, ?)";
