@@ -1,0 +1,1 @@
+Step 1 executed: Configured the project to connect to the PostgreSQL database on host 'globeco-pricing-service-postgresql', port 5435, database 'postgres', user 'postgres' by updating src/main/resources/application.properties with the appropriate datasource properties. 

@@ -1,6 +1,6 @@
 ---
 description: 
-globs: *requirements*-md
+globs: 
 alwaysApply: false
 ---
 When generating DTOs, please follow these rules:
