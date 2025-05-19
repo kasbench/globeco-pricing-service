@@ -39,3 +39,13 @@ Step 9 executed: Implemented unit tests for price caching to verify cache hits a
 [2024-06-10 10:05] Started Step 12: Implementing tests for the PriceController API endpoints as specified in the execution plan.
 
 [2024-06-10 10:06] Created PriceControllerTest with tests for GET /api/v1/prices, GET /api/v1/price/{ticker}, and 404 error handling, using MockMvc and Mockito to mock the service layer and verify response structure.
+
+[2024-06-10 10:07] Started Step 13: Implementing liveness, readiness, and startup health checks for the service as required for Kubernetes deployment.
+
+[2024-06-10 10:08] Added actuator and management configuration for liveness, readiness, and startup health checks in application.properties, and documented these endpoints in README.md for Kubernetes deployment.
+
+[2024-06-10 10:09] Started Step 14: Completing documentation for the service in README.md as required by the execution plan.
+
+[2024-06-10 10:10] Completed service documentation in README.md, including overview, technology stack, database info, API endpoints, caching, migrations, testing, health checks, and deployment notes.
+
+[2024-06-10 10:11] Started Step 15: Creating a Dockerfile for the application as required by the execution plan.
