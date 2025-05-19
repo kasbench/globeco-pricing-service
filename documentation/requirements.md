@@ -96,9 +96,8 @@ This is an unusual and complicated migration.  Please follow these steps exactly
 - The second step is to insert all of the rows from the csv file to the price table in the database.  The field names in the CSV file match column names in the database.  You can let PostgreSQL generate the `id` and `version` columns.  
 
 
-## DTOs
+## DTO
 
-### Blotter DTOs
 
 **PriceDTO** 
 
