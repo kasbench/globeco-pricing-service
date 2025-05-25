@@ -61,3 +61,5 @@ Step 9 executed: Implemented unit tests for price caching to verify cache hits a
 [2024-06-10 10:17] Fixed bug in PriceService.toDto: now converts java.sql.Date to LocalDate using toLocalDate(), preventing UnsupportedOperationException when calling /api/v1/prices.
 
 [2024-06-10 10:18] Fixed test failures in PriceControllerTest by using java.sql.Date for priceDate in all Price entity constructions, matching the type expected by the toDto method and preventing ClassCastException.
+
+2024-06-09: Added global CORS configuration to allow any origin for all endpoints by creating a WebMvcConfigurer bean in GlobecoPricingServiceApplication.java. This enables CORS for all HTTP methods and headers, as required.

@@ -30,7 +30,7 @@ Email: noah@kasbench.org
 | PostgreSQL JDBC Driver | (from BOM) | Runtime JDBC driver |
 | JUnit Platform Launcher | (from BOM) | For running tests |
 | Spring Boot Starter Test | (from BOM) | For testing |
-| PostgreSQL (Database) | 17 | As specified in [globeco-trade-service-postgresql](https://github.com/kasbench/globeco-trade-service-postgresql) |
+| PostgreSQL (Database) | 17 | As specified in [globeco-pricing-service-postgresql](https://github.com/kasbench/globeco-trade-pricing-postgresql) |
 | Caffeine | 3.1.8 | In-memory caching provider for Spring's caching abstraction (5 minute TTL) |
 
 Notes:
