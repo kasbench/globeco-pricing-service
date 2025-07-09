@@ -63,3 +63,45 @@ Step 9 executed: Implemented unit tests for price caching to verify cache hits a
 [2024-06-10 10:18] Fixed test failures in PriceControllerTest by using java.sql.Date for priceDate in all Price entity constructions, matching the type expected by the toDto method and preventing ClassCastException.
 
 2024-06-09: Added global CORS configuration to allow any origin for all endpoints by creating a WebMvcConfigurer bean in GlobecoPricingServiceApplication.java. This enables CORS for all HTTP methods and headers, as required.
+
+---
+
+**Request:** Generate a Kubernetes manifest to deploy PostgreSQL in the globeco namespace, using the provided Docker run statement as a guide, and place the manifest in the k8s directory.
+
+**Action:** Created k8s/globeco-postgresql-deployment.yaml with a Namespace, Deployment, and Service for PostgreSQL, matching the image, ports, environment variable, and listen_addresses configuration from the Docker run example. No persistent storage was configured as per the request.
+
+---
+
+**Request:** Update the PostgreSQL manifest to use storage with storage class `storage-local` and clarify if a StatefulSet should be used. User confirmed single replica.
+
+**Action:** Updated k8s/globeco-postgresql-deployment.yaml to use a StatefulSet with a single replica, added a PersistentVolumeClaim template using the storage-local StorageClass, included a headless Service for stable network identity, and retained the ClusterIP Service for access. Storage size set to 10Gi.
+
+---
+
+**Request:** Fix PostgreSQL StatefulSet manifest error caused by mounting directly to /var/lib/postgresql/data (lost+found directory issue). User approved solution.
+
+**Action:** Updated k8s/globeco-postgresql-deployment.yaml to mount the volume at /var/lib/postgresql/data/pgdata and set the PGDATA environment variable accordingly. This avoids the lost+found directory issue and allows PostgreSQL to initialize properly.
+
+---
+
+**Request:** Further fix for PostgreSQL StatefulSet manifest error (lost+found directory still present). User approved solution to use a deeper subdirectory.
+
+**Action:** Updated k8s/globeco-postgresql-deployment.yaml to mount the volume at /var/lib/postgresql/data/pgdata/data and set the PGDATA environment variable to match. This ensures the data directory is empty and avoids the lost+found directory issue with local storage.
+
+---
+
+**Request:** Fix PostgreSQL StatefulSet manifest that keeps failing with lost+found directory error despite nested subdirectories. User requested best approach.
+
+**Action:** Updated k8s/globeco-postgresql-deployment.yaml to use an init container that creates a clean subdirectory (/var/lib/postgresql/data/pgdata) for PostgreSQL data. The init container ensures proper ownership (999:999) and permissions (700) for the data directory, avoiding the lost+found directory issue with local storage.
+
+---
+
+**Request:** Analyze startup logs to identify why actuator probes hang in Kubernetes. Application takes ~15 seconds to start but probes were configured with only 10 seconds initial delay.
+
+**Action:** Updated k8s/globeco-pricing-service-deployment.yaml probe configuration: increased initialDelaySeconds to 20 (allowing for 15-second startup), reduced timeoutSeconds from 240 to 5 (more reasonable), and optimized periodSeconds for better responsiveness. This should resolve the hanging probe issue.
+
+---
+
+**Request:** Application still hanging with probes enabled. New logs show startup takes 35+ seconds (not 15s), and connection refused errors from debug pod indicate readiness issues.
+
+**Action:** Updated k8s/globeco-pricing-service-deployment.yaml with increased startup probe timeout: initialDelaySeconds to 30, failureThreshold to 24 (120s total), and increased liveness/readiness initialDelaySeconds to 40 to account for the actual 35+ second startup time.
