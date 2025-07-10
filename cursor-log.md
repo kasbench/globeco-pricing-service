@@ -116,3 +116,7 @@ Step 9 executed: Implemented unit tests for price caching to verify cache hits a
 **Request:** Fix OTLP metrics configuration issue where application was publishing to localhost:4318 instead of the configured gRPC endpoint. User reported connection refused errors in logs.
 
 **Action:** Fixed OTLP configuration by using the correct Spring Boot property names. Changed from incorrect `management.metrics.export.otlp.*` to correct `management.otlp.metrics.export.*` properties. Configured `management.otlp.metrics.export.url=http://otel-collector-collector.monitoring.svc.cluster.local:4317` to use the gRPC OTLP endpoint as specified in OTEL_CONFIGURATION_GUIDE.md. The application was ignoring the previous configuration due to wrong property names.
+
+**Request:** Fix persistent Flyway migration checksum error in PriceControllerTest by ensuring it uses an ephemeral database for each test run.
+
+**Action:** Added `@Import(TestcontainersConfiguration.class)` to PriceControllerTest so it uses the Testcontainers PostgreSQL container, matching the setup of other tests. This ensures a fresh, isolated database for every test run and resolves the Flyway checksum mismatch.

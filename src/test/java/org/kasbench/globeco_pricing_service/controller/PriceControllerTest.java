@@ -16,6 +16,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.context.annotation.Import;
+import org.kasbench.globeco_pricing_service.TestcontainersConfiguration;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -29,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith(MockitoExtension.class)
+@Import(TestcontainersConfiguration.class)
 class PriceControllerTest {
     @Autowired
     private MockMvc mockMvc;
