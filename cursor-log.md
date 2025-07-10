@@ -120,3 +120,14 @@ Step 9 executed: Implemented unit tests for price caching to verify cache hits a
 **Request:** Fix persistent Flyway migration checksum error in PriceControllerTest by ensuring it uses an ephemeral database for each test run.
 
 **Action:** Added `@Import(TestcontainersConfiguration.class)` to PriceControllerTest so it uses the Testcontainers PostgreSQL container, matching the setup of other tests. This ensures a fresh, isolated database for every test run and resolves the Flyway checksum mismatch.
+
+---
+
+## [2024-06-10] Add OpenTelemetry tracing (OTLP) to Spring Boot service
+
+- User requested to send traces to the OpenTelemetry Collector, referencing OTEL_CONFIGURATION_GUIDE.md.
+- Added dependency: io.micrometer:micrometer-tracing-bridge-otel to build.gradle.
+- Added property: management.otlp.tracing.endpoint=http://otel-collector-collector.monitoring.svc.cluster.local:4318/v1/traces to application.properties.
+- Ensured consistency with existing metrics export configuration.
+
+---

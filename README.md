@@ -140,3 +140,56 @@ To deploy the service to Kubernetes:
 - **Swagger UI:** [http://localhost:8083/swagger-ui.html](http://localhost:8083/swagger-ui.html)
 
 These endpoints provide interactive API documentation and allow you to test the service endpoints directly from your browser.
+
+## Telemetry Instrumentation (Metrics & Traces)
+
+The GlobeCo Pricing Service is instrumented for both metrics and distributed tracing using OpenTelemetry and Micrometer. This enables observability for performance, health, and distributed request flows.
+
+### Metrics
+- **Exported via:** [Micrometer](https://micrometer.io/) with OTLP exporter
+- **Collector endpoint:**
+  - `http://otel-collector-collector.monitoring.svc.cluster.local:4318/v1/metrics`
+- **Forwarded to:** Prometheus (via OpenTelemetry Collector remote write)
+- **Configuration (see `application.properties`):**
+  ```properties
+  management.otlp.metrics.export.url=http://otel-collector-collector.monitoring.svc.cluster.local:4318/v1/metrics
+  management.otlp.metrics.export.resource-attributes.service.name=globeco-pricing-service
+  management.otlp.metrics.export.resource-attributes.service.version=1.0.0
+  management.otlp.metrics.export.resource-attributes.service.namespace=globeco
+  management.otlp.metrics.export.resource-attributes.service.instance.version=1.0.0
+  management.otlp.metrics.export.resource-attributes.service.instance.namespace=globeco
+  ```
+- **What is instrumented:**
+  - JVM, system, and Spring Boot metrics (memory, CPU, HTTP requests, cache, etc.)
+  - Custom metrics can be added via Micrometer if needed
+
+### Distributed Tracing
+- **Exported via:** Micrometer Tracing Bridge (OpenTelemetry)
+- **Collector endpoint:**
+  - `http://otel-collector-collector.monitoring.svc.cluster.local:4318/v1/traces`
+- **Forwarded to:** Jaeger (via OpenTelemetry Collector)
+- **Configuration (see `application.properties`):**
+  ```properties
+  management.otlp.tracing.endpoint=http://otel-collector-collector.monitoring.svc.cluster.local:4318/v1/traces
+  management.otlp.tracing.resource-attributes.service.name=globeco-pricing-service
+  management.otlp.tracing.resource-attributes.service.version=1.0.0
+  management.otlp.tracing.resource-attributes.service.namespace=globeco
+  management.otlp.tracing.resource-attributes.service.instance.namespace=globeco
+  management.otlp.tracing.sampling.probability=1.0
+  ```
+- **What is instrumented:**
+  - All HTTP requests (controllers/endpoints) are traced automatically
+  - Spans are created for incoming requests and propagated downstream
+  - Custom spans can be added in business logic if needed
+
+### Viewing Telemetry Data
+- **Metrics:**
+  - View in Prometheus or Grafana dashboards (via OpenTelemetry Collector remote write)
+- **Traces:**
+  - View in Jaeger UI (e.g., `http://jaeger.orchestration.svc.cluster.local:16686`)
+
+### References
+- See `documentation/OTEL_CONFIGURATION_GUIDE.md` for full integration details and troubleshooting.
+- [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/)
+- [Jaeger](https://www.jaegertracing.io/)
+- [Prometheus](https://prometheus.io/)

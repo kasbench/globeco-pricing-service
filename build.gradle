@@ -44,6 +44,7 @@ dependencies {
 	// Micrometer and OpenTelemetry for OTLP metrics export
 	implementation 'io.micrometer:micrometer-registry-otlp'
 	implementation 'io.opentelemetry:opentelemetry-exporter-otlp:1.38.0'
+	implementation 'io.micrometer:micrometer-tracing-bridge-otel'
 }
 
 tasks.named('test') {
