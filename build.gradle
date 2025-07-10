@@ -41,6 +41,9 @@ dependencies {
 	implementation 'org.testcontainers:junit-jupiter'
 	implementation 'org.testcontainers:postgresql'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// Micrometer and OpenTelemetry for OTLP metrics export
+	implementation 'io.micrometer:micrometer-registry-otlp'
+	implementation 'io.opentelemetry:opentelemetry-exporter-otlp:1.38.0'
 }
 
 tasks.named('test') {

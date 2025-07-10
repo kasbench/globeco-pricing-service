@@ -16,7 +16,7 @@ spec:
       containers:
         - name: globeco-pricing-service
           image: kasbench/globeco-pricing-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8083
           resources:

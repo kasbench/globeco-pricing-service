@@ -105,3 +105,14 @@ Step 9 executed: Implemented unit tests for price caching to verify cache hits a
 **Request:** Application still hanging with probes enabled. New logs show startup takes 35+ seconds (not 15s), and connection refused errors from debug pod indicate readiness issues.
 
 **Action:** Updated k8s/globeco-pricing-service-deployment.yaml with increased startup probe timeout: initialDelaySeconds to 30, failureThreshold to 24 (120s total), and increased liveness/readiness initialDelaySeconds to 40 to account for the actual 35+ second startup time.
+
+---
+
+**Request:** Configure the application to send metrics to the OpenTelemetry Collector, using the instructions provided in OTEL_CONFIGURATION_GUIDE.md.
+
+**Action:** Added Micrometer and OpenTelemetry dependencies to build.gradle. Configured application.properties to export metrics to the collector at otel-collector-collector.default.svc.cluster.local:4317 using OTLP/gRPC, with insecure connection and service name set to globeco-pricing-service.
+
+
+**Request:** Fix OTLP metrics configuration issue where application was publishing to localhost:4318 instead of the configured gRPC endpoint. User reported connection refused errors in logs.
+
+**Action:** Fixed OTLP configuration by using the correct Spring Boot property names. Changed from incorrect `management.metrics.export.otlp.*` to correct `management.otlp.metrics.export.*` properties. Configured `management.otlp.metrics.export.url=http://otel-collector-collector.monitoring.svc.cluster.local:4317` to use the gRPC OTLP endpoint as specified in OTEL_CONFIGURATION_GUIDE.md. The application was ignoring the previous configuration due to wrong property names.

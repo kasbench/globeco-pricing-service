@@ -4,6 +4,7 @@
 FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 COPY . .
+RUN apt-get update && apt-get install -y ca-certificates && update-ca-certificates
 RUN ./gradlew clean bootJar --no-daemon
 
 # ---- Run Stage ----

@@ -24,8 +24,8 @@ The OpenTelemetry Collector exposes the OTLP receiver on the following ports:
 - `otel-collector-collector` (ClusterIP, ports 4317/4318)
 
 **Example Service DNS:**
-- `otel-collector-collector.default.svc.cluster.local:4317` (gRPC)
-- `otel-collector-collector.default.svc.cluster.local:4318` (HTTP)
+- `otel-collector-collector.monitoring.svc.cluster.local:4317` (gRPC)
+- `otel-collector-collector.monitoring.svc.cluster.local:4318` (HTTP)
 
 ---
 
@@ -35,7 +35,7 @@ The OpenTelemetry Collector exposes the OTLP receiver on the following ports:
 
 **Send traces using OTLP (gRPC or HTTP) to:**
 ```
-otel-collector-collector.default.svc.cluster.local:4317
+otel-collector-collector.monitoring.svc.cluster.local:4317
 ```
 
 **Example (Python, OpenTelemetry SDK):**
@@ -46,7 +46,7 @@ from opentelemetry.sdk.trace import TracerProvider
 
 provider = TracerProvider()
 processor = BatchSpanProcessor(
-    OTLPSpanExporter(endpoint="otel-collector-collector.default.svc.cluster.local:4317", insecure=True)
+    OTLPSpanExporter(endpoint="otel-collector-collector.monitoring.svc.cluster.local:4317", insecure=True)
 )
 provider.add_span_processor(processor)
 ```
@@ -62,7 +62,7 @@ from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExp
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.sdk.metrics import MeterProvider
 
-exporter = OTLPMetricExporter(endpoint="otel-collector-collector.default.svc.cluster.local:4317", insecure=True)
+exporter = OTLPMetricExporter(endpoint="otel-collector-collector.monitoring.svc.cluster.local:4317", insecure=True)
 reader = PeriodicExportingMetricReader(exporter)
 provider = MeterProvider(metric_readers=[reader])
 ```
@@ -71,8 +71,8 @@ provider = MeterProvider(metric_readers=[reader])
 
 ## 3. What Happens Next?
 
-- **Traces** are forwarded to **Jaeger** at `jaeger.default.svc.cluster.local:4317` (gRPC) and available in the Jaeger UI at `http://jaeger.default.svc.cluster.local:16686`.
-- **Metrics** are forwarded to **Prometheus** via remote write at `http://prometheus-server.default.svc.cluster.local:80/api/v1/write`.
+- **Traces** are forwarded to **Jaeger** at `jaeger.observability.svc.cluster.local:4317` (gRPC) and available in the Jaeger UI at `http://jaeger.orchestra.svc.cluster.local:16686`.
+- **Metrics** are forwarded to **Prometheus** via remote write at `http://prometheus-server.monitor.svc.cluster.local:80/api/v1/write`.
 
 ---
 
@@ -92,7 +92,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: otel-collector-collector
-  namespace: default
+  namespace: monitoring
 spec:
   ports:
     - name: otlp-grpc
