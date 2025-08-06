@@ -45,6 +45,8 @@ dependencies {
 	implementation 'io.micrometer:micrometer-registry-otlp'
 	implementation 'io.opentelemetry:opentelemetry-exporter-otlp:1.38.0'
 	implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+	// Add Prometheus registry for direct scraping
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 }
 
 tasks.named('test') {

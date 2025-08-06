@@ -1,12 +1,12 @@
 # Implementation Plan
 
-- [ ] 1. Update build dependencies and application configuration
+- [x] 1. Update build dependencies and application configuration
   - Add Micrometer Prometheus registry dependency to build.gradle
   - Update application.properties to enable Prometheus endpoint and verify OTLP configuration
   - Verify existing OpenTelemetry dependencies are compatible with implementation guide versions
   - _Requirements: 2.1, 2.3_
 
-- [ ] 2. Create HTTP metrics configuration infrastructure
+- [x] 2. Create HTTP metrics configuration infrastructure
   - Create HttpMetricsConfiguration class with AtomicInteger bean for in-flight counter
   - Register http_requests_in_flight Gauge with MeterRegistry using AtomicInteger reference
   - Configure FilterRegistrationBean with high priority (order=1) and URL pattern "/*"
