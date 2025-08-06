@@ -12,12 +12,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerMapping;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 /**
  * HTTP metrics filter for recording request metrics.
@@ -42,6 +44,12 @@ public class HttpMetricsFilter implements Filter {
 
     // CRITICAL: Cache Timer instances to avoid re-registration overhead using composite key strategy
     private final ConcurrentHashMap<String, Timer> timerCache = new ConcurrentHashMap<>();
+
+    // Patterns for sophisticated path normalization to prevent cardinality explosion
+    private static final Pattern UUID_PATTERN = Pattern.compile(
+            "/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(?=/|$)");
+    private static final Pattern NUMERIC_ID_PATTERN = Pattern.compile("/\\d{2,}(?=/|$)");
+    private static final Pattern SINGLE_DIGIT_ID_PATTERN = Pattern.compile("/\\d(?=/|$)");
 
     private final MeterRegistry meterRegistry;
     private final AtomicInteger inFlightCounter;
@@ -93,9 +101,9 @@ public class HttpMetricsFilter implements Filter {
      */
     private void recordMetrics(HttpServletRequest request, HttpServletResponse response, long startTime) {
         try {
-            // Extract and normalize labels (basic implementation for task 3)
+            // Extract and normalize labels with sophisticated path normalization
             String method = normalizeMethod(request.getMethod());
-            String path = getBasicPath(request);
+            String path = normalizePath(request);
             String status = normalizeStatusCode(response.getStatus());
 
             // Calculate duration in milliseconds (KEY INSIGHT: works better than nanoseconds)
@@ -130,14 +138,108 @@ public class HttpMetricsFilter implements Filter {
     }
 
     /**
-     * Basic path extraction for task 3. More sophisticated normalization will be added in task 4.
+     * Sophisticated path normalization with multiple regex patterns for UUID and numeric ID replacement.
+     * Implements Spring MVC HandlerMapping integration to prefer BEST_MATCHING_PATTERN_ATTRIBUTE.
+     * Includes context-aware single digit ID replacement for API endpoints only.
+     * Falls back to "/unknown" for normalization failures as documented in implementation guide.
      */
-    private String getBasicPath(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        if (path == null || path.isEmpty()) {
+    private String normalizePath(HttpServletRequest request) {
+        try {
+            // First try to get the best match pattern from Spring MVC handler mapping
+            String bestMatchingPattern = extractSpringMvcPattern(request);
+            if (bestMatchingPattern != null && !bestMatchingPattern.isEmpty()) {
+                return bestMatchingPattern;
+            }
+
+            // Fallback to URI normalization with sophisticated path parameter replacement
+            String path = request.getRequestURI();
+            if (path == null) {
+                return "/unknown";
+            }
+
+            // Remove context path if present
+            String contextPath = request.getContextPath();
+            if (contextPath != null && !contextPath.isEmpty() && path.startsWith(contextPath)) {
+                path = path.substring(contextPath.length());
+            }
+
+            // Apply sophisticated path parameter replacement
+            path = normalizePathParameters(path);
+
+            // Ensure path starts with /
+            if (!path.startsWith("/")) {
+                path = "/" + path;
+            }
+
+            return path;
+
+        } catch (Exception e) {
+            logger.warn("Failed to normalize path for request {}, using fallback",
+                    request.getRequestURI(), e);
             return "/unknown";
         }
+    }
+
+    /**
+     * Extracts Spring MVC handler mapping pattern attributes for accurate route patterns.
+     * Prefers BEST_MATCHING_PATTERN_ATTRIBUTE when available.
+     */
+    private String extractSpringMvcPattern(HttpServletRequest request) {
+        try {
+            // Try to get the best matching pattern from Spring MVC
+            Object bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+            if (bestMatchingPattern instanceof String) {
+                return (String) bestMatchingPattern;
+            }
+
+            // Fallback to path within handler mapping
+            Object pathWithinHandlerMapping = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+            if (pathWithinHandlerMapping instanceof String) {
+                return (String) pathWithinHandlerMapping;
+            }
+
+            return null;
+        } catch (Exception e) {
+            logger.debug("Failed to extract Spring MVC pattern from request attributes", e);
+            return null;
+        }
+    }
+
+    /**
+     * Applies multiple regex patterns for robust ID/UUID replacement to prevent cardinality explosion.
+     * Uses context-aware single digit ID replacement for API endpoints only.
+     */
+    private String normalizePathParameters(String path) {
+        if (path == null) {
+            return "/unknown";
+        }
+
+        // Replace UUIDs first (more specific pattern)
+        path = UUID_PATTERN.matcher(path).replaceAll("/{uuid}");
+
+        // Replace multi-digit numeric IDs with {id} placeholder
+        path = NUMERIC_ID_PATTERN.matcher(path).replaceAll("/{id}");
+
+        // Context-aware single digit ID replacement for API endpoints only
+        if (isApiEndpoint(path)) {
+            path = SINGLE_DIGIT_ID_PATTERN.matcher(path).replaceAll("/{id}");
+        }
+
         return path;
+    }
+
+    /**
+     * Determines if the path represents an API endpoint where single digit ID replacement should occur.
+     * Only replaces single digits in API contexts to avoid false positives with version numbers.
+     */
+    private boolean isApiEndpoint(String path) {
+        return path.contains("/api/") || 
+               path.contains("/v1/") || 
+               path.contains("/v2/") ||
+               path.contains("/prices/") ||
+               path.contains("/users/") || 
+               path.contains("/orders/") ||
+               path.contains("/executions/");
     }
 
     /**
