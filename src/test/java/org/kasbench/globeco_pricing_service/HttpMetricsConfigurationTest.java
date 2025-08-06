@@ -42,7 +42,9 @@ class HttpMetricsConfigurationTest {
     @Test
     void testHttpMetricsFilterRegistration() {
         HttpMetricsConfiguration config = new HttpMetricsConfiguration();
-        HttpMetricsFilter filter = new HttpMetricsFilter();
+        MeterRegistry meterRegistry = new SimpleMeterRegistry();
+        AtomicInteger inFlightCounter = new AtomicInteger(0);
+        HttpMetricsFilter filter = new HttpMetricsFilter(meterRegistry, inFlightCounter);
         
         FilterRegistrationBean<HttpMetricsFilter> registration = 
             config.httpMetricsFilterRegistration(filter);
