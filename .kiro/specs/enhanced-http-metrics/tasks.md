@@ -54,7 +54,7 @@
   - Implement load testing scenarios to validate Timer caching reduces CPU overhead
   - _Requirements: 5.5, 4.1_
 
-- [ ] 9. Create integration tests for metrics endpoints
+- [x] 9. Create integration tests for metrics endpoints
   - Write tests that verify /actuator/prometheus endpoint returns expected HTTP metrics
   - Create tests that make actual HTTP requests to pricing service endpoints and verify metrics
   - Add tests for various HTTP methods (GET, POST) and status codes (200, 404, 500)
