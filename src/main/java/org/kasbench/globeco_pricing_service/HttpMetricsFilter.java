@@ -71,27 +71,99 @@ public class HttpMetricsFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        // Start timing and increment in-flight counter
+        // Start timing and track in-flight increment state to prevent double-decrement scenarios
         long startTime = System.nanoTime();
         boolean inFlightIncremented = false;
+        boolean metricsRecordedInCatch = false;
 
         try {
+            // Increment in-flight counter and track state
             inFlightCounter.incrementAndGet();
             inFlightIncremented = true;
+            
+            // Process the request through the filter chain
             chain.doFilter(request, response);
+            
+        } catch (IOException e) {
+            // Record metrics even during IOException and track that we've recorded them
+            recordMetricsWithErrorHandling(httpRequest, httpResponse, startTime, e);
+            metricsRecordedInCatch = true;
+            throw e;
+        } catch (ServletException e) {
+            // Record metrics even during ServletException and track that we've recorded them
+            recordMetricsWithErrorHandling(httpRequest, httpResponse, startTime, e);
+            metricsRecordedInCatch = true;
+            throw e;
+        } catch (RuntimeException e) {
+            // Record metrics even during RuntimeException and track that we've recorded them
+            recordMetricsWithErrorHandling(httpRequest, httpResponse, startTime, e);
+            metricsRecordedInCatch = true;
+            throw e;
         } catch (Exception e) {
-            // Record metrics even when exceptions occur
-            recordMetrics(httpRequest, httpResponse, startTime);
+            // Record metrics even during any other Exception and track that we've recorded them
+            recordMetricsWithErrorHandling(httpRequest, httpResponse, startTime, e);
+            metricsRecordedInCatch = true;
             throw e;
         } finally {
-            try {
-                recordMetrics(httpRequest, httpResponse, startTime);
-                if (inFlightIncremented) {
-                    inFlightCounter.decrementAndGet();
-                }
-            } catch (Exception e) {
-                logger.error("Failed to record HTTP metrics", e);
+            // Always attempt to record metrics and decrement in-flight counter
+            // Only record metrics if we haven't already done so in the catch block
+            if (!metricsRecordedInCatch) {
+                recordMetricsWithErrorHandling(httpRequest, httpResponse, startTime, null);
             }
+            
+            // Always decrement in-flight counter if we successfully incremented it
+            // Use boolean flag to prevent double-decrement scenarios
+            if (inFlightIncremented) {
+                try {
+                    inFlightCounter.decrementAndGet();
+                } catch (Exception e) {
+                    // Log error but don't interfere with request processing
+                    logger.error("Failed to decrement in-flight counter for request {} {}, " +
+                            "this may cause in-flight metrics to be inaccurate. Request details: method={}, uri={}, " +
+                            "remoteAddr={}, userAgent={}", 
+                            httpRequest.getMethod(), httpRequest.getRequestURI(),
+                            httpRequest.getMethod(), httpRequest.getRequestURI(),
+                            httpRequest.getRemoteAddr(), httpRequest.getHeader("User-Agent"), e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Records HTTP metrics with comprehensive error handling and request context logging.
+     * Ensures that metrics recording failures don't interfere with request processing.
+     * 
+     * @param request the HTTP request
+     * @param response the HTTP response
+     * @param startTime the request start time in nanoseconds
+     * @param exception the exception that occurred during request processing, if any
+     */
+    private void recordMetricsWithErrorHandling(HttpServletRequest request, HttpServletResponse response, 
+                                               long startTime, Exception exception) {
+        try {
+            recordMetrics(request, response, startTime);
+            
+            // Log exception context if an exception occurred during request processing
+            if (exception != null) {
+                logger.warn("HTTP request completed with exception but metrics were recorded successfully. " +
+                        "Request details: method={}, uri={}, status={}, remoteAddr={}, userAgent={}, " +
+                        "duration={}ms, exception={}", 
+                        request.getMethod(), request.getRequestURI(), response.getStatus(),
+                        request.getRemoteAddr(), request.getHeader("User-Agent"),
+                        (System.nanoTime() - startTime) / 1_000_000L, exception.getClass().getSimpleName());
+            }
+            
+        } catch (Exception metricsException) {
+            // Comprehensive error logging with request context information
+            // CRITICAL: Don't let metrics recording failures interfere with request processing
+            logger.error("Failed to record HTTP metrics for request. This will not affect request processing. " +
+                    "Request details: method={}, uri={}, status={}, remoteAddr={}, userAgent={}, " +
+                    "duration={}ms, originalException={}, metricsException={}", 
+                    request.getMethod(), request.getRequestURI(), response.getStatus(),
+                    request.getRemoteAddr(), request.getHeader("User-Agent"),
+                    (System.nanoTime() - startTime) / 1_000_000L,
+                    exception != null ? exception.getClass().getSimpleName() : "none",
+                    metricsException.getMessage(), metricsException);
         }
     }
 
@@ -100,40 +172,73 @@ public class HttpMetricsFilter implements Filter {
      * Uses cached Timer instances and records duration in milliseconds for OTLP compatibility.
      */
     private void recordMetrics(HttpServletRequest request, HttpServletResponse response, long startTime) {
+        String method = null;
+        String path = null;
+        String status = null;
+        long durationMillis = 0;
+        
         try {
             // Extract and normalize labels with sophisticated path normalization
-            String method = normalizeMethod(request.getMethod());
-            String path = normalizePath(request);
-            String status = normalizeStatusCode(response.getStatus());
+            method = normalizeMethod(request.getMethod());
+            path = normalizePath(request);
+            status = normalizeStatusCode(response.getStatus());
 
             // Calculate duration in milliseconds (KEY INSIGHT: works better than nanoseconds)
             long durationNanos = System.nanoTime() - startTime;
-            long durationMillis = durationNanos / 1_000_000L;
+            durationMillis = durationNanos / 1_000_000L;
 
-            // Record counter metric
-            meterRegistry.counter(HTTP_REQUESTS_TOTAL,
-                    "method", method,
-                    "path", path,
-                    "status", status)
-                    .increment();
+            // Record counter metric with individual error handling
+            try {
+                meterRegistry.counter(HTTP_REQUESTS_TOTAL,
+                        "method", method,
+                        "path", path,
+                        "status", status)
+                        .increment();
+            } catch (Exception e) {
+                logger.warn("Failed to record counter metric for request {} {}, labels: method={}, path={}, status={}",
+                        request.getMethod(), request.getRequestURI(), method, path, status, e);
+            }
 
             // CRITICAL: Use cached Timer instances with composite key strategy to avoid re-registration overhead
-            String timerKey = HTTP_REQUEST_DURATION + ":" + method + ":" + path + ":" + status;
-            Timer timer = timerCache.computeIfAbsent(timerKey, key -> Timer.builder(HTTP_REQUEST_DURATION)
-                    .description("Duration of HTTP requests")
-                    .serviceLevelObjectives(HISTOGRAM_BUCKETS)
-                    .publishPercentileHistogram(false)
-                    .tag("method", method)
-                    .tag("path", path)
-                    .tag("status", status)
-                    .register(meterRegistry));
+            try {
+                String timerKey = HTTP_REQUEST_DURATION + ":" + method + ":" + path + ":" + status;
+                // Create final variables for lambda expression
+                final String finalMethod = method;
+                final String finalPath = path;
+                final String finalStatus = status;
+                
+                Timer timer = timerCache.computeIfAbsent(timerKey, key -> {
+                    try {
+                        return Timer.builder(HTTP_REQUEST_DURATION)
+                                .description("Duration of HTTP requests")
+                                .serviceLevelObjectives(HISTOGRAM_BUCKETS)
+                                .publishPercentileHistogram(false)
+                                .tag("method", finalMethod)
+                                .tag("path", finalPath)
+                                .tag("status", finalStatus)
+                                .register(meterRegistry);
+                    } catch (Exception timerCreationException) {
+                        logger.warn("Failed to create Timer for key {}, creating fallback timer", key, timerCreationException);
+                        // Return a fallback timer without labels to prevent complete failure
+                        return Timer.builder(HTTP_REQUEST_DURATION + "_fallback")
+                                .description("Fallback duration timer for HTTP requests")
+                                .register(meterRegistry);
+                    }
+                });
 
-            // Record duration in milliseconds
-            timer.record(durationMillis, TimeUnit.MILLISECONDS);
+                // Record duration in milliseconds
+                timer.record(durationMillis, TimeUnit.MILLISECONDS);
+                
+            } catch (Exception e) {
+                logger.warn("Failed to record timer metric for request {} {}, duration={}ms, labels: method={}, path={}, status={}",
+                        request.getMethod(), request.getRequestURI(), durationMillis, method, path, status, e);
+            }
 
         } catch (Exception e) {
-            logger.error("Failed to record HTTP request metrics for {} {}",
-                    request.getMethod(), request.getRequestURI(), e);
+            // This catch block handles failures in label extraction/normalization
+            logger.error("Failed to extract labels or record HTTP request metrics for {} {}, " +
+                    "extracted labels: method={}, path={}, status={}, duration={}ms",
+                    request.getMethod(), request.getRequestURI(), method, path, status, durationMillis, e);
         }
     }
 
