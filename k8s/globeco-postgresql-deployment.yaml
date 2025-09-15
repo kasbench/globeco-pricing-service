@@ -57,15 +57,10 @@ spec:
           volumeMounts:
             - name: postgredb-storage
               mountPath: /var/lib/postgresql/data
-  volumeClaimTemplates:
-    - metadata:
-        name: postgredb-storage
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        storageClassName: local-storage
-        resources:
-          requests:
-            storage: 10Gi
+      volumes:
+        - name: postgredb-storage
+          persistentVolumeClaim:
+            claimName: pricing-service-postgres-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -79,4 +74,21 @@ spec:
     - protocol: TCP
       port: 5432
       targetPort: 5432
-  type: ClusterIP 
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pricing-service-postgres-pvc
+  namespace: globeco
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: 10Gi
+  selector:
+    matchLabels:
+      app: pricing-service-postgres
+      type: local 
