@@ -39,7 +39,7 @@ spec:
               chmod 700 /var/lib/postgresql/data/pgdata
           volumeMounts:
             - name: postgredb-storage
-              mountPath: /var/lib/postgresql/data
+              mountPath: /var/lib/postgresql  # Changed here
       containers:
         - name: globeco-pricing-service-postgresql
           image: postgres:latest
@@ -56,7 +56,7 @@ spec:
             - "listen_addresses=0.0.0.0"
           volumeMounts:
             - name: postgredb-storage
-              mountPath: /var/lib/postgresql/data
+              mountPath: /var/lib/postgresql  # Changed here
       volumes:
         - name: postgredb-storage
           persistentVolumeClaim:
@@ -91,4 +91,4 @@ spec:
   selector:
     matchLabels:
       app: pricing-service-postgres
-      type: local 
+      type: local
