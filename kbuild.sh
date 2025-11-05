@@ -2,7 +2,10 @@
 
 # Build and push the Docker image
 echo "Building and pushing Docker image..."
-if docker buildx build --platform linux/amd64,linux/arm64 -t kasbench/globeco-pricing-service:latest --push .; then
+if docker buildx build --platform linux/amd64,linux/arm64 \
+    -t kasbench/globeco-pricing-service:latest \
+    -t kasbench/globeco-pricing-service:1.0.0 \
+    --push .; then
     echo "Docker build successful. Updating Kubernetes deployment..."
     
     # Delete existing deployment

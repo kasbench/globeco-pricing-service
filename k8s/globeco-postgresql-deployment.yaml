@@ -42,8 +42,8 @@ spec:
               mountPath: /var/lib/postgresql  # Changed here
       containers:
         - name: globeco-pricing-service-postgresql
-          image: postgres:latest
-          imagePullPolicy: Always
+          image: postgres:18.0
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5432
           env:
