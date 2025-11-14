@@ -35,7 +35,7 @@
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
 
-- [ ] 5. Configure HikariCP connection pool
+- [x] 5. Configure HikariCP connection pool
   - Add maximum-pool-size configuration (5 connections per replica)
   - Add minimum-idle configuration (2 connections)
   - Add connection-timeout configuration (20 seconds)
