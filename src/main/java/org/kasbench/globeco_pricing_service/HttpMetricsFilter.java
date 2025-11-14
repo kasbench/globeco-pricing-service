@@ -19,7 +19,6 @@ import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
 
 /**
  * HTTP metrics filter for recording request metrics.
@@ -44,12 +43,6 @@ public class HttpMetricsFilter implements Filter {
 
     // CRITICAL: Cache Timer instances to avoid re-registration overhead using composite key strategy
     private final ConcurrentHashMap<String, Timer> timerCache = new ConcurrentHashMap<>();
-
-    // Patterns for sophisticated path normalization to prevent cardinality explosion
-    private static final Pattern UUID_PATTERN = Pattern.compile(
-            "/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(?=/|$)");
-    private static final Pattern NUMERIC_ID_PATTERN = Pattern.compile("/\\d{2,}(?=/|$)");
-    private static final Pattern SINGLE_DIGIT_ID_PATTERN = Pattern.compile("/\\d(?=/|$)");
 
     private final MeterRegistry meterRegistry;
     private final AtomicInteger inFlightCounter;
@@ -118,19 +111,15 @@ public class HttpMetricsFilter implements Filter {
                     inFlightCounter.decrementAndGet();
                 } catch (Exception e) {
                     // Log error but don't interfere with request processing
-                    logger.error("Failed to decrement in-flight counter for request {} {}, " +
-                            "this may cause in-flight metrics to be inaccurate. Request details: method={}, uri={}, " +
-                            "remoteAddr={}, userAgent={}", 
-                            httpRequest.getMethod(), httpRequest.getRequestURI(),
-                            httpRequest.getMethod(), httpRequest.getRequestURI(),
-                            httpRequest.getRemoteAddr(), httpRequest.getHeader("User-Agent"), e);
+                    logger.error("Failed to decrement in-flight counter for request {} {}", 
+                            httpRequest.getMethod(), httpRequest.getRequestURI(), e);
                 }
             }
         }
     }
 
     /**
-     * Records HTTP metrics with comprehensive error handling and request context logging.
+     * Records HTTP metrics with error handling.
      * Ensures that metrics recording failures don't interfere with request processing.
      * 
      * @param request the HTTP request
@@ -142,28 +131,10 @@ public class HttpMetricsFilter implements Filter {
                                                long startTime, Exception exception) {
         try {
             recordMetrics(request, response, startTime);
-            
-            // Log exception context if an exception occurred during request processing
-            if (exception != null) {
-                logger.warn("HTTP request completed with exception but metrics were recorded successfully. " +
-                        "Request details: method={}, uri={}, status={}, remoteAddr={}, userAgent={}, " +
-                        "duration={}ms, exception={}", 
-                        request.getMethod(), request.getRequestURI(), response.getStatus(),
-                        request.getRemoteAddr(), request.getHeader("User-Agent"),
-                        (System.nanoTime() - startTime) / 1_000_000L, exception.getClass().getSimpleName());
-            }
-            
         } catch (Exception metricsException) {
-            // Comprehensive error logging with request context information
             // CRITICAL: Don't let metrics recording failures interfere with request processing
-            logger.error("Failed to record HTTP metrics for request. This will not affect request processing. " +
-                    "Request details: method={}, uri={}, status={}, remoteAddr={}, userAgent={}, " +
-                    "duration={}ms, originalException={}, metricsException={}", 
-                    request.getMethod(), request.getRequestURI(), response.getStatus(),
-                    request.getRemoteAddr(), request.getHeader("User-Agent"),
-                    (System.nanoTime() - startTime) / 1_000_000L,
-                    exception != null ? exception.getClass().getSimpleName() : "none",
-                    metricsException.getMessage(), metricsException);
+            logger.error("Failed to record HTTP metrics for request {} {}", 
+                    request.getMethod(), request.getRequestURI(), metricsException);
         }
     }
 
@@ -195,8 +166,8 @@ public class HttpMetricsFilter implements Filter {
                         "status", status)
                         .increment();
             } catch (Exception e) {
-                logger.warn("Failed to record counter metric for request {} {}, labels: method={}, path={}, status={}",
-                        request.getMethod(), request.getRequestURI(), method, path, status, e);
+                logger.error("Failed to record counter metric for request {} {}", 
+                        request.getMethod(), request.getRequestURI(), e);
             }
 
             // CRITICAL: Use cached Timer instances with composite key strategy to avoid re-registration overhead
@@ -218,7 +189,7 @@ public class HttpMetricsFilter implements Filter {
                                 .tag("status", finalStatus)
                                 .register(meterRegistry);
                     } catch (Exception timerCreationException) {
-                        logger.warn("Failed to create Timer for key {}, creating fallback timer", key, timerCreationException);
+                        logger.error("Failed to create Timer for key {}", key, timerCreationException);
                         // Return a fallback timer without labels to prevent complete failure
                         return Timer.builder(HTTP_REQUEST_DURATION + "_fallback")
                                 .description("Fallback duration timer for HTTP requests")
@@ -230,23 +201,21 @@ public class HttpMetricsFilter implements Filter {
                 timer.record(durationMillis, TimeUnit.MILLISECONDS);
                 
             } catch (Exception e) {
-                logger.warn("Failed to record timer metric for request {} {}, duration={}ms, labels: method={}, path={}, status={}",
-                        request.getMethod(), request.getRequestURI(), durationMillis, method, path, status, e);
+                logger.error("Failed to record timer metric for request {} {}", 
+                        request.getMethod(), request.getRequestURI(), e);
             }
 
         } catch (Exception e) {
             // This catch block handles failures in label extraction/normalization
-            logger.error("Failed to extract labels or record HTTP request metrics for {} {}, " +
-                    "extracted labels: method={}, path={}, status={}, duration={}ms",
-                    request.getMethod(), request.getRequestURI(), method, path, status, durationMillis, e);
+            logger.error("Failed to extract labels or record HTTP request metrics for {} {}", 
+                    request.getMethod(), request.getRequestURI(), e);
         }
     }
 
     /**
-     * Sophisticated path normalization with multiple regex patterns for UUID and numeric ID replacement.
+     * Path normalization with string-based operations for UUID and numeric ID replacement.
      * Implements Spring MVC HandlerMapping integration to prefer BEST_MATCHING_PATTERN_ATTRIBUTE.
-     * Includes context-aware single digit ID replacement for API endpoints only.
-     * Falls back to "/unknown" for normalization failures as documented in implementation guide.
+     * Falls back to "/unknown" for normalization failures.
      */
     private String normalizePath(HttpServletRequest request) {
         try {
@@ -256,7 +225,7 @@ public class HttpMetricsFilter implements Filter {
                 return bestMatchingPattern;
             }
 
-            // Fallback to URI normalization with sophisticated path parameter replacement
+            // Fallback to URI normalization with string-based path parameter replacement
             String path = request.getRequestURI();
             if (path == null) {
                 return "/unknown";
@@ -268,7 +237,7 @@ public class HttpMetricsFilter implements Filter {
                 path = path.substring(contextPath.length());
             }
 
-            // Apply sophisticated path parameter replacement
+            // Apply string-based path parameter replacement
             path = normalizePathParameters(path);
 
             // Ensure path starts with /
@@ -279,8 +248,7 @@ public class HttpMetricsFilter implements Filter {
             return path;
 
         } catch (Exception e) {
-            logger.warn("Failed to normalize path for request {}, using fallback",
-                    request.getRequestURI(), e);
+            logger.error("Failed to normalize path for request {}", request.getRequestURI(), e);
             return "/unknown";
         }
     }
@@ -305,32 +273,63 @@ public class HttpMetricsFilter implements Filter {
 
             return null;
         } catch (Exception e) {
-            logger.debug("Failed to extract Spring MVC pattern from request attributes", e);
             return null;
         }
     }
 
     /**
-     * Applies multiple regex patterns for robust ID/UUID replacement to prevent cardinality explosion.
-     * Uses context-aware single digit ID replacement for API endpoints only.
+     * String-based path parameter normalization for robust ID/UUID replacement.
+     * Uses simple string operations instead of regex for better performance.
      */
     private String normalizePathParameters(String path) {
         if (path == null) {
             return "/unknown";
         }
 
-        // Replace UUIDs first (more specific pattern)
-        path = UUID_PATTERN.matcher(path).replaceAll("/{uuid}");
+        // Split path into segments
+        String[] segments = path.split("/");
+        StringBuilder normalized = new StringBuilder();
 
-        // Replace multi-digit numeric IDs with {id} placeholder
-        path = NUMERIC_ID_PATTERN.matcher(path).replaceAll("/{id}");
+        for (String segment : segments) {
+            if (segment.isEmpty()) {
+                continue;
+            }
 
-        // Context-aware single digit ID replacement for API endpoints only
-        if (isApiEndpoint(path)) {
-            path = SINGLE_DIGIT_ID_PATTERN.matcher(path).replaceAll("/{id}");
+            normalized.append("/");
+
+            // Check if segment is a UUID (36 chars with hyphens in standard format)
+            if (segment.length() == 36 && segment.contains("-")) {
+                normalized.append("{uuid}");
+            }
+            // Check if segment is numeric (2+ digits or single digit for API endpoints)
+            else if (isNumericId(segment, path)) {
+                normalized.append("{id}");
+            }
+            else {
+                normalized.append(segment);
+            }
         }
 
-        return path;
+        return normalized.length() > 0 ? normalized.toString() : "/";
+    }
+
+    /**
+     * Checks if a segment is a numeric ID that should be normalized.
+     * Handles both multi-digit IDs and single-digit IDs for API endpoints.
+     */
+    private boolean isNumericId(String segment, String fullPath) {
+        // Check if segment is all digits
+        if (!segment.matches("\\d+")) {
+            return false;
+        }
+
+        // Multi-digit IDs are always normalized
+        if (segment.length() >= 2) {
+            return true;
+        }
+
+        // Single-digit IDs only normalized for API endpoints
+        return isApiEndpoint(fullPath);
     }
 
     /**

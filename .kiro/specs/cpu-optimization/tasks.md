@@ -8,14 +8,14 @@
   - Remove NormalDistribution import
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ] 2. Simplify HttpMetricsFilter path normalization
-- [ ] 2.1 Replace regex-based path normalization with string operations
+- [x] 2. Simplify HttpMetricsFilter path normalization
+- [x] 2.1 Replace regex-based path normalization with string operations
   - Remove Pattern constants (UUID_PATTERN, NUMERIC_ID_PATTERN, SINGLE_DIGIT_ID_PATTERN)
   - Implement new normalizePathParameters() using string splitting
   - Maintain same normalization behavior for UUID and numeric ID detection
   - _Requirements: 2.1, 2.2, 2.4_
 
-- [ ] 2.2 Reduce logging overhead in HttpMetricsFilter
+- [x] 2.2 Reduce logging overhead in HttpMetricsFilter
   - Remove DEBUG-level logging in request processing path
   - Keep only ERROR-level logging for actual failures
   - Remove redundant context logging
