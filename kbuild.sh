@@ -4,7 +4,7 @@
 echo "Building and pushing Docker image..."
 if docker buildx build --platform linux/amd64,linux/arm64 \
     -t kasbench/globeco-pricing-service:latest \
-    -t kasbench/globeco-pricing-service:1.0.0 \
+    -t kasbench/globeco-pricing-service:1.0.1 \
     --push .; then
     echo "Docker build successful. Updating Kubernetes deployment..."
     
