@@ -27,7 +27,7 @@
   - Document environment variables for temporary DEBUG enabling
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-- [ ] 4. Configure JPA and Hibernate optimization
+- [x] 4. Configure JPA and Hibernate optimization
   - Add hibernate.jdbc.batch_size configuration
   - Add hibernate.order_inserts and hibernate.order_updates configuration
   - Add hibernate.jdbc.fetch_size configuration
