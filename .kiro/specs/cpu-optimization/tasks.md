@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Optimize random sampling in PriceController
+- [x] 1. Optimize random sampling in PriceController
   - Replace Apache Commons Math3 NormalDistribution with Java's Random.nextGaussian()
   - Add ThreadLocal<Random> field for thread-safe random number generation
   - Update toSampledDto() method to use simple gaussian transformation
