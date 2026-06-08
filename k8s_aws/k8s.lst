@@ -1,0 +1,3 @@
+postgresql-persistent-volume-claim.yaml
+globeco-postgresql-deployment.yaml
+globeco-pricing-service-deployment.yaml
