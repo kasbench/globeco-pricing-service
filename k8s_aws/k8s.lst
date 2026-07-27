@@ -3,3 +3,4 @@ globeco-postgresql-deployment.yaml
 +30
 globeco-pricing-service-deployment.yaml
 hpa.yaml
+vpa.yaml
