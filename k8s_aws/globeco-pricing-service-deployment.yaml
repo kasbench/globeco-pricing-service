@@ -72,6 +72,11 @@ spec:
               value: $(MY_NODE_NAME)
             - name: k8s_namespace_name
               value: $(MY_NAMESPACE)
+          resizePolicy:
+            - resourceName: cpu
+              restartPolicy: NotRequired
+            - resourceName: memory
+              restartPolicy: RestartContainer
 
           resources:
             requests:
