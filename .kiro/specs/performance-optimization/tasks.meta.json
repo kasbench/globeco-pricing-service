@@ -1,0 +1,162 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Generate `V2__LoadPricingData.sql` from `selected_prices.csv`": [
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539164565
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539171316
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539253900
+      }
+    ],
+    "1.2 Delete the Java-based migration file": [
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539164632
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539262037
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539308373
+      }
+    ],
+    "2. Checkpoint - Verify migration changes": [
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539164652
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539335089
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539434415
+      }
+    ],
+    "3.1 Add `maximumSize(500)` to `CacheConfig.java`": [
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539164675
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539172214
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539254794
+      }
+    ],
+    "4.1 Remove the dependency from `build.gradle`": [
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539164694
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539173059
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539255633
+      }
+    ],
+    "5. Final checkpoint - Verify all changes": [
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539164723
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539528936
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539614103
+      }
+    ],
+    "3. Bound Caffeine cache size": [
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539254821
+      }
+    ],
+    "4. Remove unused `commons-math3` dependency": [
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539255654
+      }
+    ],
+    "1. Replace Java migration with static SQL migration": [
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539308392
+      }
+    ],
+    "1.3 Write integration test verifying migration correctness": [
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539329711
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539437790
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539524796
+      }
+    ],
+    "3.2 Write unit test verifying cache size bound": [
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539330530
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539438541
+      },
+      {
+        "executionId": "258417fc-b955-4c35-86a3-b3b84c36b038",
+        "chatSessionId": "sess_1403ec3e-53ab-40c7-80cb-57091a8a3568",
+        "timestamp": 1786539525550
+      }
+    ]
+  }
+}
