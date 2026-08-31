@@ -13,6 +13,19 @@ spec:
       labels:
         app: globeco-pricing-service
     spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:18.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until pg_isready -h globeco-pricing-service-postgresql -p 5432; do
+                echo "Waiting for PostgreSQL to be ready..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready."
       containers:
         - name: globeco-pricing-service
           image: kasbench/globeco-pricing-service:1.0.2
