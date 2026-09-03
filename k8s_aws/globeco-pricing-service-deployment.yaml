@@ -4,7 +4,22 @@ metadata:
   name: globeco-pricing-service
   namespace: globeco
 spec:
+  {{- if eq .Values.autoscaler "vpa" }}
+  replicas: 2
+  {{- else }}
   replicas: 1
+  {{- end }}
+
+  # A newly-ready pod must remain ready for 10 seconds before
+  # the Deployment considers it available.
+  minReadySeconds: 10
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+
   selector:
     matchLabels:
       app: globeco-pricing-service
@@ -135,4 +150,19 @@ spec:
     - protocol: TCP
       port: 8083
       targetPort: 8083
-  type: ClusterIP 
+  type: ClusterIP
+{{- if eq .Values.autoscaler "vpa" }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: globeco-pricing-service-pdb
+  namespace: globeco
+
+spec:
+  minAvailable: 1
+
+  selector:
+    matchLabels:
+      app: globeco-pricing-service
+{{- end }}
