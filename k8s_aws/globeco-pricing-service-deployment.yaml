@@ -37,6 +37,13 @@ spec:
                 sleep 2
               done
               echo "PostgreSQL is ready."
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 50m
+              memory: 64Mi
       containers:
         - name: globeco-pricing-service
           image: kasbench/globeco-pricing-service:1.0.2
